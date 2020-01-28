@@ -36,14 +36,9 @@ namespace LuceneSandbox
 
             writer.Flush(triggerMerge: false, applyAllDeletes: false);
 
-            // search with BooleanQuery
-            //var boolQuery = new Lucene.Net.Search.BooleanQuery();
-            //boolQuery.Add(new TermQuery(new Term("Query", "york")), Occur.SHOULD);
-            //boolQuery.Add(new TermQuery(new Term("Query", "new")), Occur.SHOULD);
-
             var simpleQueryParser = new Lucene.Net.QueryParsers.Simple.SimpleQueryParser(analyzer, "Query");
             simpleQueryParser.DefaultOperator = Occur.SHOULD;            
-            var query = simpleQueryParser.Parse("chicago -in");            
+            var query = simpleQueryParser.Parse("Best pants chicago -in");            
 
             // re-use the writer to get real-time updates
             var searcher = new IndexSearcher(writer.GetReader(applyAllDeletes: true));
