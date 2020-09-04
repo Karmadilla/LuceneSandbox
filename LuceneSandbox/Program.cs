@@ -2,6 +2,7 @@
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using Lucene.Net.QueryParsers.Simple;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
@@ -18,6 +19,9 @@ namespace LuceneSandbox
     {
         static void Main(string[] args)
         {
+            Random random = new Random();
+            string[] words = File.ReadAllLines("words.txt");
+
             var luceneVersion = LuceneVersion.LUCENE_48;
             var dir = new RAMDirectory();
 
@@ -41,6 +45,7 @@ namespace LuceneSandbox
                 Console.Clear();
                 Console.WriteLine("1. Index");
                 Console.WriteLine("2. Search");
+                Console.WriteLine("3. Fill Index");
 
                 string option = Console.ReadLine().ToString();
 
@@ -58,7 +63,12 @@ namespace LuceneSandbox
                     Console.Write("Text to search: ");
                     string textToSearch = Console.ReadLine();
                     
-                    var simpleQueryParser = new Lucene.Net.QueryParsers.Simple.SimpleQueryParser(analyzer, "Query");
+                    var simpleQueryParser = new Lucene.Net.QueryParsers.Simple.SimpleQueryParser(
+                        analyzer,
+                        new Dictionary<string, float>() 
+                        {
+                            { "Query", 1f }
+                        }, Operator.OR_OPERATOR);
                     simpleQueryParser.DefaultOperator = Occur.SHOULD;
                     var query = simpleQueryParser.Parse(textToSearch);
                     var searcher = new IndexSearcher(writer.GetReader(false));
@@ -67,12 +77,32 @@ namespace LuceneSandbox
                     foreach (var hit in topDocs)
                     {
                         var foundDoc = searcher.Doc(hit.Doc);
+
                         foreach (var item2 in foundDoc.Fields)
                         {
                             Console.WriteLine("value: " + item2.GetStringValue() + " score: " + hit.Score);
                         }
                     }
                     Console.WriteLine("Press Enter to continue");
+                    Console.ReadLine();
+                }
+                else if (option == "3")
+                {
+                    Console.Clear();
+                    Console.Write("How many sentences?: ");
+                    string numberOfRandomSentences = Console.ReadLine();
+
+                    int number = Convert.ToInt32(numberOfRandomSentences);
+
+                    for (int i = 0; i < number; i++)
+                    {
+                        string sentence = GenerateRandomSentence(words, random).ToLower();
+                        Console.WriteLine(i + " " + sentence);
+
+                        writer.AddDocument(new Document() { new TextField("Query", new { Query = sentence }.Query, Field.Store.YES) });
+                        
+                    }
+                    writer.Flush(true, false);
                     Console.ReadLine();
                 }
             }
@@ -93,6 +123,25 @@ namespace LuceneSandbox
             //        Console.WriteLine("value: " + item2.GetStringValue() + " score: " + hit.Score);
             //    }
             //}
+        }
+
+        private static string GenerateRandomSentence(string[] words, Random random)
+        {
+            int numberOfWords = random.Next(40, 90);
+            StringBuilder builder = new StringBuilder();
+
+            for (int i = 0; i < numberOfWords; i++)
+            {
+                string sentence = GetRandomWord(words, random) + " ";
+                builder.Append(sentence);
+            }
+            return builder.ToString().Trim();
+        }
+
+        private static string GetRandomWord(string[] words, Random random)
+        {
+            int word = random.Next(words.Length);
+            return words[word];
         }
     }
 }
