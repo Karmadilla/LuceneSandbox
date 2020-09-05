@@ -127,7 +127,7 @@ namespace LuceneSandbox
 
         private static string GenerateRandomSentence(string[] words, Random random)
         {
-            int numberOfWords = random.Next(40, 90);
+            int numberOfWords = random.Next(4, 8);
             StringBuilder builder = new StringBuilder();
 
             for (int i = 0; i < numberOfWords; i++)
