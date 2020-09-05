@@ -45,7 +45,7 @@ namespace LuceneSandbox
                 Console.Clear();
                 Console.WriteLine("1. Index");
                 Console.WriteLine("2. Search");
-                Console.WriteLine("3. Fill Index");
+                Console.WriteLine("3. Fill Index (bulk index random word sentences)");
 
                 string option = Console.ReadLine().ToString();
 
